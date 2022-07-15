@@ -1,9 +1,7 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QTimer>
-#include <QMouseEvent>
 #include <QPainter>
-#include <QImage>
 #include <queue>
 #include <iostream>
 
@@ -70,6 +68,7 @@ namespace mg {
 
   class qtContext : public context {
     mainWindow* w;
+    friend class mainWindow;
   public:
     qtContext(mainWindow* win, int wid, int hei);
     void drawLine(int x1, int y1, int x2, int y2, pen p);
@@ -107,7 +106,6 @@ namespace mg {
     else return;
 
     paint = new QPainter(this);
-    paint->fillRect(0, 0, 800, 600, Qt::white);
 
     while(!tasks.empty()) {
       drawTask t = tasks.front();

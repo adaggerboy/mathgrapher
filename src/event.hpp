@@ -12,6 +12,11 @@ namespace mg {
     int x, y, dx, dy, button;
   };
 
+  class eventHandler {
+  public:
+    void handle(event);
+  };
+
 }
 
 
