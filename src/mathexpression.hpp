@@ -25,9 +25,27 @@ namespace mg {
   class functionalExpression {
   public:
     virtual std::string restoreExpression() = 0;
-    virtual void setArgument(functionalExpression* expression,int index) = 0;
+    virtual void setArgument(functionalExpression* expression, int index) = 0;
     virtual double calculate() = 0;
     virtual void destroy() = 0;
+  };
+
+  const std::string syntaxErrors[] = {
+    "Duplication of point in constant",
+    "Unexpected symbols",
+    "Unexpected syntax element",
+    "Unexpected ending",
+    "Expression with undefined priority",
+    "Undefined function name",
+    "Undefined double function name"
+  };
+
+  class syntaxError {
+    int position;
+    int code;
+  public:
+    syntaxError(int, int);
+    std::string what();
   };
 }
 

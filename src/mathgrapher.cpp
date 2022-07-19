@@ -7,7 +7,7 @@
 namespace mg {
   display* initQt(int, char**, renderer*);
   renderer* initRenderer();
-  functionalExpression* generate();
+  functionalExpression* generate(std::string, int = 0);
 }
 
 using namespace mg;
@@ -17,12 +17,15 @@ int main(int argc, char *argv[]) {
 
   using namespace std;
 
-  functionalExpression* exp = generate();
+  try {
+    functionalExpression* exp = generate("2sin(alpha-beta^2)+2*7(a+b)(a-b)");
+    globalVarTable.setValue('x', 1);
+    std::cout << exp->restoreExpression() << '\n';
 
-  for (int i = 0; i < 10; i++) {
-    globalVarTable.setValue('x', i / 2.);
-    cout << exp->calculate() << endl;
+  } catch (syntaxError e) {
+    cout << e.what() << endl;
   }
+
 
 
   // display* d = initQt(argc, argv, initRenderer());
