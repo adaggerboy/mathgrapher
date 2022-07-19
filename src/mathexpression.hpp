@@ -47,6 +47,8 @@ namespace mg {
     syntaxError(int, int);
     std::string what();
   };
+
+  functionalExpression* generate(std::string expr, int dbgOffset = 0);
 }
 
 #endif /* end of include guard: MG_MATH_EXPRESSION */

@@ -48,6 +48,7 @@ namespace mg {
   class qtContext;
 
   class mainWindow : public QMainWindow {
+    Q_OBJECT
   private:
     QTimer *timer;
     QPainter *paint;
@@ -64,6 +65,8 @@ namespace mg {
   public:
     mainWindow(qtDisplay* client, renderer* r);
     void paintEvent(QPaintEvent *event);
+  public slots:
+    void nrender();
   };
 
   class qtContext : public context {
@@ -97,13 +100,17 @@ namespace mg {
     rend = r;
 
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(repaint()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(nrender()));
     timer->start(1000/60);
+    forceUpdate = false;
+  }
+
+  void mainWindow::nrender() {
+    if(forceUpdate || rend->check()) repaint();
   }
 
   void mainWindow::paintEvent(QPaintEvent *event) {
-    if(forceUpdate || rend->check()) rend->update(actualClient);
-    else return;
+    rend->update(actualClient);
 
     paint = new QPainter(this);
 

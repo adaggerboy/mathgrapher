@@ -390,7 +390,7 @@ namespace mg {
     }
   }
 
-  functionalExpression* generate(std::string expr, int dbgOffset = 0);
+  functionalExpression* generate(std::string expr, int dbgOffset);
 
   inline functionalExpression* parseVPattern(sltnode* c1, sltnode* c2 = NULL, sltnode* c3 = NULL) {
     if(c2 == NULL) {

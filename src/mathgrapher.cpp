@@ -1,42 +1,53 @@
 #include "event.hpp"
 #include "display.hpp"
 #include "mathexpression.hpp"
+#include "mathgrapher.hpp"
 
 #include <iostream>
 
 namespace mg {
+  grapher::grapher() {
+    function = NULL;
+    changed = true;
+  }
+  void grapher::setFunction(functionalExpression* fun) {
+    function = fun;
+    changed = true;
+  }
+  double grapher::calculateY(double x) {
+    if(!function) return 0;
+    globalVarTable.setValue('x', x);
+    return function->calculate();
+  }
+  bool grapher::isSomethingChanged() {
+    bool res = changed;
+    changed = false;
+    return res;
+  }
+
   display* initQt(int, char**, renderer*);
-  renderer* initRenderer();
-  functionalExpression* generate(std::string, int = 0);
+  renderer* initRenderer(grapher*);
 }
-
-using namespace mg;
-
 
 int main(int argc, char *argv[]) {
 
+  using namespace mg;
   using namespace std;
 
+  grapher* graph = new grapher;
+  renderer* rend = initRenderer(graph);
+
   try {
-    functionalExpression* exp = generate("2sin(alpha-beta^2)+2*7(a+b)(a-b)");
-    globalVarTable.setValue('x', 1);
-    std::cout << exp->restoreExpression() << '\n';
+    functionalExpression* exp = generate(argv[1]);
+    globalVarTable.setValue('x', 2);
+    graph->setFunction(exp);
 
   } catch (syntaxError e) {
     cout << e.what() << endl;
   }
 
-
-
-  // display* d = initQt(argc, argv, initRenderer());
-  // color s;
-  // s.red = 255;
-  // s.green = 255;
-  // s.blue = 255;
-  // s.alpha = 255;
-  // d->start();
-  // d->getContext()->fill(s);
-  // d->getContext()->update();
+  display* qt = initQt(argc, argv, rend);
+  qt->start();
 
   return 0;
 }

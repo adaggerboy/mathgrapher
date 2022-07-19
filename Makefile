@@ -11,6 +11,13 @@ OBJS := $(addprefix $(OBJDIR)/, $(addsuffix .o, $(COMPONENTS)))
 
 all: build
 
+obj/qtdisplay.o: src/moc_qtdisplay.cpp
+	$(CXX) $(CXXFLAGS) -c src/moc_qtdisplay.cpp -o obj/qtdisplay.o
+
+src/moc_qtdisplay.cpp: src/qtdisplay.cpp
+	cat src/qtdisplay.cpp > src/moc_qtdisplay.cpp
+	moc src/qtdisplay.cpp >> src/moc_qtdisplay.cpp
+
 $(OBJDIR)/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -24,11 +31,15 @@ bin/mathgrapher: bin $(OBJDIR) $(OBJS)
 	$(LXX) $(LXXFLAGS) $(OBJS) -o bin/mathgrapher
 
 run: bin/mathgrapher
-	bin/mathgrapher
+	bin/mathgrapher 0
+
+test: bin/mathgrapher
+	bin/mathgrapher 2*sin\(x/2\)
 
 build: bin/mathgrapher
 
 flush:
+	rm -rf src/moc_qtdisplay.cpp
 	rm -rf obj/*
 
 clean: flush
