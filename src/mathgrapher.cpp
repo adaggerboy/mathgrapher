@@ -4,11 +4,14 @@
 #include "mathgrapher.hpp"
 
 #include <iostream>
+#include <QApplication>
 
 namespace mg {
   grapher::grapher() {
     function = NULL;
     changed = true;
+    params.scale = 10.0;
+    params.pxscale = 0;
   }
   void grapher::setFunction(functionalExpression* fun) {
     function = fun;
@@ -25,7 +28,15 @@ namespace mg {
     return res;
   }
 
-  display* initQt(int, char**, renderer*);
+  graphParams* grapher::getGraphParamsTable() {
+    return &params;
+  }
+
+  void grapher::change() {
+    changed = true;
+  }
+
+  display* initQt(QApplication*, renderer*, eventHandler*);
   renderer* initRenderer(grapher*);
 }
 
@@ -36,6 +47,7 @@ int main(int argc, char *argv[]) {
 
   grapher* graph = new grapher;
   renderer* rend = initRenderer(graph);
+  eventHandler* ev = new eventHandler(graph);
 
   try {
     functionalExpression* exp = generate(argv[1]);
@@ -46,8 +58,9 @@ int main(int argc, char *argv[]) {
     cout << e.what() << endl;
   }
 
-  display* qt = initQt(argc, argv, rend);
-  qt->start();
+  QApplication* qapp = new QApplication(argc, argv);
+  display* qt = initQt(qapp, rend, ev);
+  qapp->exec();
 
   return 0;
 }

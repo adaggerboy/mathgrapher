@@ -35,6 +35,12 @@ namespace mg {
     int getHeight() {
       return height;
     }
+    void setWidth(int w) {
+      width = w;
+    }
+    void setHeight(int h) {
+      height = h;
+    }
     virtual void drawLine(int x1, int y1, int x2, int y2, pen p) = 0;
     virtual void fill(int x1, int x2, int y1, int y2, color c) = 0;
     virtual void fill(color c) = 0;
@@ -54,8 +60,9 @@ namespace mg {
   class display {
   protected:
     renderer* rend;
+    eventHandler* ev;
   public:
-    display(renderer* r) : rend(r) {}
+    display(renderer* r, eventHandler* e) : rend(r), ev(e) {}
     virtual void start() = 0;
     virtual context* getContext() = 0;
   };

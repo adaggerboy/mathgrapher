@@ -2,6 +2,8 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QPainter>
+#include <QMouseEvent>
+#include <QResizeEvent>
 #include <queue>
 #include <iostream>
 
@@ -44,10 +46,10 @@ namespace mg {
   }
 
   class qtDisplay;
-  class mainWindow;
+  class qtMainWindow;
   class qtContext;
 
-  class mainWindow : public QMainWindow {
+  class qtMainWindow : public QMainWindow {
     Q_OBJECT
   private:
     QTimer *timer;
@@ -63,17 +65,24 @@ namespace mg {
     }
     friend class qtContext;
   public:
-    mainWindow(qtDisplay* client, renderer* r);
+    qtMainWindow(qtDisplay* client, renderer* r);
     void paintEvent(QPaintEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
   public slots:
     void nrender();
   };
 
   class qtContext : public context {
-    mainWindow* w;
-    friend class mainWindow;
+  protected:
+    qtMainWindow* w;
   public:
-    qtContext(mainWindow* win, int wid, int hei);
+    qtContext(qtMainWindow* win, int wid, int hei);
     void drawLine(int x1, int y1, int x2, int y2, pen p);
     void fill(int x1, int x2, int y1, int y2, color c);
     void fill(color c);
@@ -85,17 +94,19 @@ namespace mg {
 
   class qtDisplay : public display {
     QApplication* a;
-    mainWindow* w;
+    qtMainWindow* w;
     qtContext* cont;
-    friend class mainWindow;
+  protected:
+    void event(mg::event);
+    friend class qtMainWindow;
   public:
-    qtDisplay(QApplication* app, renderer* r, int width, int height);
+    qtDisplay(QApplication* app, renderer* r, eventHandler* e, int width, int height);
     ~qtDisplay();
     void start();
     context* getContext();
   };
 
-  mainWindow::mainWindow(qtDisplay* client, renderer* r) {
+  qtMainWindow::qtMainWindow(qtDisplay* client, renderer* r) {
     actualClient = client;
     rend = r;
 
@@ -105,11 +116,11 @@ namespace mg {
     forceUpdate = false;
   }
 
-  void mainWindow::nrender() {
+  void qtMainWindow::nrender() {
     if(forceUpdate || rend->check()) repaint();
   }
 
-  void mainWindow::paintEvent(QPaintEvent *event) {
+  void qtMainWindow::paintEvent(QPaintEvent *event) {
     rend->update(actualClient);
 
     paint = new QPainter(this);
@@ -151,7 +162,7 @@ namespace mg {
     delete paint;
   }
 
-  qtContext::qtContext(mainWindow* win, int wid, int hei) {
+  qtContext::qtContext(qtMainWindow* win, int wid, int hei) {
     w = win;
     width = wid;
     height = hei;
@@ -243,28 +254,72 @@ namespace mg {
   }
 
 
-  qtDisplay::qtDisplay(QApplication* app, renderer* r, int width, int height) : display(r) {
+  qtDisplay::qtDisplay(QApplication* app, renderer* r, eventHandler* ev, int width, int height) : display(r, ev) {
     a = app;
-    w = new mainWindow(this, rend);
+    w = new qtMainWindow(this, rend);
+    cont = new qtContext(w, width, height);
     w->resize(width, height);
     w->show();
-    cont = new qtContext(w, width, height);
   }
 
   qtDisplay::~qtDisplay() {
   }
 
   void qtDisplay::start() {
-    a->exec();
   }
 
   context* qtDisplay::getContext() {
     return cont;
   }
 
-  display* initQt(int argc, char **argv, renderer* rend) {
-    qapp = new QApplication(argc, argv);
-    return (display*)new qtDisplay(qapp, rend, 800, 600);
+  void qtDisplay::event(mg::event e) {
+    ev->handle(e);
+  }
+
+  void qtMainWindow::mousePressEvent(QMouseEvent *ev) {
+    int btn;
+    if(ev->button() & Qt::LeftButton) btn = 1;
+    else if(ev->button() & Qt::RightButton) btn = 2;
+    else if(ev->button() & Qt::MiddleButton) btn = 3;
+    else btn = 0;
+    mg::event e = {.type = mousePressed, .x=ev->x(), .y=ev->y()};
+    actualClient->event(e);
+  }
+  void qtMainWindow::mouseReleaseEvent(QMouseEvent *ev) {
+    int btn;
+    if(ev->button() & Qt::LeftButton) btn = 1;
+    else if(ev->button() & Qt::RightButton) btn = 2;
+    else if(ev->button() & Qt::MiddleButton) btn = 3;
+    else btn = 0;
+    mg::event e = {.type = mouseReleased, .x=ev->x(), .y=ev->y(), .button=btn};
+    actualClient->event(e);
+  }
+  void qtMainWindow::mouseMoveEvent(QMouseEvent *ev) {
+    mg::event e = {.type = mouseMoved, .x=ev->x(), .y=ev->y()};
+    actualClient->event(e);
+  }
+  void qtMainWindow::wheelEvent(QWheelEvent *ev) {
+    mg::event e = {.type = wheelRotated, .x=(int)ev->position().x(), .y=(int)ev->position().y(), .dx=ev->angleDelta().x(), .dy=ev->angleDelta().y()};
+    actualClient->event(e);
+  }
+  void qtMainWindow::resizeEvent(QResizeEvent *ev) {
+    actualClient->getContext()->setWidth(ev->size().width());
+    actualClient->getContext()->setHeight(ev->size().height());
+    // mg::event e = {.type = windowResized, .x=ev->size().width(), .y=ev->size().height()};
+    // actualClient->event(e);
+  }
+
+  void qtMainWindow::keyPressEvent(QKeyEvent *ev) {
+    mg::event e = {.type = keyPressed, .button=ev->key()};
+    actualClient->event(e);
+  }
+  void qtMainWindow::keyReleaseEvent(QKeyEvent *ev) {
+    mg::event e = {.type = keyPressed, .button=ev->key()};
+    actualClient->event(e);
+  }
+
+  display* initQt(QApplication* app, renderer* rend, eventHandler* ev) {
+    return (display*)new qtDisplay(app, rend, ev, 800, 600);
   }
 
 }

@@ -4,7 +4,7 @@ CXXFLAGS := -I/usr/include/qt/QtWidgets -I/usr/include/qt -I/usr/include/qt/QtCo
 LXX := $(CXX)
 LXXFLAGS := -lQt5Widgets -lQt5Gui -lQt5Core -lpthread
 
-COMPONENTS := mathexpression mathgrapher qtdisplay renderer
+COMPONENTS := mathexpression mathgrapher qtdisplay renderer event
 
 OBJDIR := obj
 OBJS := $(addprefix $(OBJDIR)/, $(addsuffix .o, $(COMPONENTS)))

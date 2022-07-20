@@ -1,11 +1,11 @@
 #ifndef MG_EVENT_HEADER
 #define MG_EVENT_HEADER
 
-#include <cstddef>
+#include "mathgrapher.hpp"
 
 namespace mg {
 
-  enum eventType {mouseMoved, mousePressed, mouseReleased, windowResized, wheelRotated};
+  enum eventType {mouseMoved, mousePressed, mouseReleased, windowResized, wheelRotated, keyPressed, keyReleased};
 
   struct event {
     eventType type;
@@ -13,8 +13,10 @@ namespace mg {
   };
 
   class eventHandler {
+    grapher* mainGrapher;
   public:
-    void handle(event);
+    eventHandler(grapher*);
+    virtual void handle(event);
   };
 
 }
