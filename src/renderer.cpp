@@ -19,20 +19,27 @@ namespace mg {
       context* con = disp->getContext();
       int w = con->getWidth(), h = con->getHeight();
       double scale = mainGrapher->getGraphParamsTable()->scale;
+      int axx = w/2 + mainGrapher->getGraphParamsTable()->basisX;
+      int axy = h/2 + mainGrapher->getGraphParamsTable()->basisY;
       con->fill(bg);
-      con->drawLine(0, h/2, w, h/2, {ax, 2});
-      con->drawLine(w/2, 0, w/2, h, {ax, 2});
+      con->drawLine(0, axy, w, axy, {ax, 2});
+      con->drawLine(axx, 0, axx, h, {ax, 2});
       for (int i = 0; i < w; i+=2) {
         int x1 = i;
         int x2 = i + 2;
-        double xv1 = (x1 - w/2) / scale;
-        double xv2 = (x2 - w/2) / scale;
+        double xv1 = (x1 - axx) / scale;
+        double xv2 = (x2 - axx) / scale;
         double yv1 = mainGrapher->calculateY(xv1);
         double yv2 = mainGrapher->calculateY(xv2);
-        int y1 = (int)(h/2 - (yv1 * scale));
-        int y2 = (int)(h/2 - (yv2 * scale));
+        int y1 = (int)(axy - (yv1 * scale));
+        int y2 = (int)(axy - (yv2 * scale));
         con->drawLine(x1, y1, x2, y2, {gr, 1});
       }
+      int px = mainGrapher->getGraphParamsTable()->pointX;
+      double pvx = (px - axx) / scale;
+      double pvy = mainGrapher->calculateY(pvx);
+      int py = (int)(axy - (pvy * scale));
+      con->drawCircle(px-3, py-3, px+3, py+3, bg, {gr, 1});
     }
     virtual bool check() {
       return mainGrapher->isSomethingChanged();

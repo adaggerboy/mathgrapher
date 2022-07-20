@@ -109,6 +109,7 @@ namespace mg {
   qtMainWindow::qtMainWindow(qtDisplay* client, renderer* r) {
     actualClient = client;
     rend = r;
+    setMouseTracking(true);
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(nrender()));

@@ -12,6 +12,8 @@ namespace mg {
     changed = true;
     params.scale = 10.0;
     params.pxscale = 0;
+    params.basisX = 0;
+    params.basisY = 0;
   }
   void grapher::setFunction(functionalExpression* fun) {
     function = fun;
@@ -38,6 +40,7 @@ namespace mg {
 
   display* initQt(QApplication*, renderer*, eventHandler*);
   renderer* initRenderer(grapher*);
+  eventHandler* initEventHandler(grapher*);
 }
 
 int main(int argc, char *argv[]) {
@@ -47,7 +50,7 @@ int main(int argc, char *argv[]) {
 
   grapher* graph = new grapher;
   renderer* rend = initRenderer(graph);
-  eventHandler* ev = new eventHandler(graph);
+  eventHandler* ev = initEventHandler(graph);
 
   try {
     functionalExpression* exp = generate(argv[1]);

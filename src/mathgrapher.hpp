@@ -8,6 +8,8 @@ namespace mg {
   struct graphParams {
     double scale;
     int pxscale;
+    int basisX, basisY;
+    int pointX, pointY;
   };
 
   class grapher {

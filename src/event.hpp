@@ -13,10 +13,8 @@ namespace mg {
   };
 
   class eventHandler {
-    grapher* mainGrapher;
   public:
-    eventHandler(grapher*);
-    virtual void handle(event);
+    virtual void handle(event) = 0;
   };
 
 }
