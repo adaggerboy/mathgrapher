@@ -18,6 +18,7 @@ namespace mg {
     virtual void update(display* disp) {
       context* con = disp->getContext();
       int w = con->getWidth(), h = con->getHeight();
+      if(mainGrapher->getGraphParamsTable()->grid) return;
       double scale = mainGrapher->getGraphParamsTable()->scale;
       int axx = w/2 + mainGrapher->getGraphParamsTable()->basisX;
       int axy = h/2 + mainGrapher->getGraphParamsTable()->basisY;

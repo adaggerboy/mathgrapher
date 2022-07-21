@@ -1,13 +1,19 @@
 #include <QApplication>
 #include <QMainWindow>
+#include <QWindow>
 #include <QTimer>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QCheckBox>
+#include <QSignalMapper>
 #include <queue>
+#include <vector>
 #include <iostream>
 
 #include "display.hpp"
+#include "controls.hpp"
+#include "event.hpp"
 
 namespace mg {
 
@@ -22,8 +28,6 @@ namespace mg {
     font f;
     std::string text;
   };
-
-
 
   inline QColor genQColor(color c) {
     return QColor(c.red, c.green, c.blue, c.alpha);
@@ -48,6 +52,7 @@ namespace mg {
   class qtDisplay;
   class qtMainWindow;
   class qtContext;
+  class qtControlWindow;
 
   class qtMainWindow : public QMainWindow {
     Q_OBJECT
@@ -95,16 +100,58 @@ namespace mg {
   class qtDisplay : public display {
     QApplication* a;
     qtMainWindow* w;
+    qtControlWindow* cw;
     qtContext* cont;
   protected:
     void event(mg::event);
     friend class qtMainWindow;
   public:
-    qtDisplay(QApplication* app, renderer* r, eventHandler* e, int width, int height);
+    qtDisplay(QApplication* app, renderer* r, eventHandler* e, controls* c, int width, int height);
     ~qtDisplay();
     void start();
     context* getContext();
   };
+
+  class qtControlWindow : public QWidget {
+    Q_OBJECT
+    controls* c;
+    // QSignalMapper* mapper;
+    std::vector<unsigned int> linking;
+    std::vector<QCheckBox*> checkboxes;
+  public:
+    qtControlWindow(controls* con);
+  public slots:
+    void change(int);
+  };
+
+  qtControlWindow::qtControlWindow(controls* con) : QWidget() {
+    // mapper = new QSignalMapper(this);
+    c = con;
+    this->setFixedSize(QSize(400, 300));
+
+    for (int i = 0; i < c->getControlsCount(); i++) {
+      control q = c->getControl(i);
+      if(q.type == control::boolT) {
+        linking.push_back((1 << 24) + checkboxes.size());
+        QCheckBox* ch = new QCheckBox(this);
+        ch->setGeometry(0, 30*i, 400, 30);
+        ch->setText(QString::fromStdString(q.userDescription));
+        connect(ch, &QCheckBox::stateChanged, [this, i] {change(i);} );
+        checkboxes.push_back(ch);
+      } else linking.push_back(0);
+    }
+
+
+
+
+  }
+
+  void qtControlWindow::change(int i) {
+    int type = (linking[i] & 0xff000000) >> 24;
+    if(type == 1) {
+      c->setValue(i, (bool)(checkboxes[linking[i] & 0x00ffffff]->checkState()));
+    }
+  }
 
   qtMainWindow::qtMainWindow(qtDisplay* client, renderer* r) {
     actualClient = client;
@@ -255,12 +302,14 @@ namespace mg {
   }
 
 
-  qtDisplay::qtDisplay(QApplication* app, renderer* r, eventHandler* ev, int width, int height) : display(r, ev) {
+  qtDisplay::qtDisplay(QApplication* app, renderer* r, eventHandler* ev, controls* con, int width, int height) : display(r, ev) {
     a = app;
     w = new qtMainWindow(this, rend);
     cont = new qtContext(w, width, height);
+    cw = new qtControlWindow(con);
     w->resize(width, height);
     w->show();
+    cw->show();
   }
 
   qtDisplay::~qtDisplay() {
@@ -283,7 +332,7 @@ namespace mg {
     else if(ev->button() & Qt::RightButton) btn = 2;
     else if(ev->button() & Qt::MiddleButton) btn = 3;
     else btn = 0;
-    mg::event e = {.type = mousePressed, .x=ev->x(), .y=ev->y()};
+    mg::event e = {.type = mousePressed, .x=ev->x(), .y=ev->y(), .button=btn};
     actualClient->event(e);
   }
   void qtMainWindow::mouseReleaseEvent(QMouseEvent *ev) {
@@ -319,8 +368,8 @@ namespace mg {
     actualClient->event(e);
   }
 
-  display* initQt(QApplication* app, renderer* rend, eventHandler* ev) {
-    return (display*)new qtDisplay(app, rend, ev, 800, 600);
+  display* initQt(QApplication* app, renderer* rend, eventHandler* ev, controls* con) {
+    return (display*)new qtDisplay(app, rend, ev, con, 800, 600);
   }
 
 }

@@ -2,6 +2,7 @@
 #include "display.hpp"
 #include "mathexpression.hpp"
 #include "mathgrapher.hpp"
+#include "controls.hpp"
 
 #include <iostream>
 #include <QApplication>
@@ -38,9 +39,10 @@ namespace mg {
     changed = true;
   }
 
-  display* initQt(QApplication*, renderer*, eventHandler*);
+  display* initQt(QApplication*, renderer*, eventHandler*, controls*);
   renderer* initRenderer(grapher*);
   eventHandler* initEventHandler(grapher*);
+  controls* initControls(grapher*);
 }
 
 int main(int argc, char *argv[]) {
@@ -51,6 +53,7 @@ int main(int argc, char *argv[]) {
   grapher* graph = new grapher;
   renderer* rend = initRenderer(graph);
   eventHandler* ev = initEventHandler(graph);
+  controls* con = initControls(graph);
 
   try {
     functionalExpression* exp = generate(argv[1]);
@@ -62,7 +65,7 @@ int main(int argc, char *argv[]) {
   }
 
   QApplication* qapp = new QApplication(argc, argv);
-  display* qt = initQt(qapp, rend, ev);
+  display* qt = initQt(qapp, rend, ev, con);
   qapp->exec();
 
   return 0;

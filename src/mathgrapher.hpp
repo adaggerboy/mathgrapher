@@ -10,6 +10,8 @@ namespace mg {
     int pxscale;
     int basisX, basisY;
     int pointX, pointY;
+
+    bool scales, grid;
   };
 
   class grapher {
