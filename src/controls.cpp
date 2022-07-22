@@ -1,5 +1,6 @@
 #include "controls.hpp"
 #include "mathgrapher.hpp"
+#include "mathexpression.hpp"
 
 #include <iostream>
 
@@ -30,12 +31,11 @@ namespace mg {
     }
     bool setValue(std::string field, bool value) {
       if(field == "showGrid") {
-        mainGrapher->getGraphParamsTable()->grid = value;
+        return setValue(1, value);
       } else if (field == "showScale") {
-        mainGrapher->getGraphParamsTable()->scales = value;
+        return setValue(2, value);
       }
-      mainGrapher->change();
-      return true;
+      return false;
     }
     bool setValue(std::string field, int value) {
       return true;
@@ -46,7 +46,10 @@ namespace mg {
 
     }
     bool setValue(std::string field, std::string value) {
-      return true;
+      if(field == "funct") {
+        return setValue(0, value);
+      }
+      return false;
     }
 
     double getDoubleValue(std::string field) {
@@ -55,15 +58,18 @@ namespace mg {
 
     bool getBoolValue(std::string field) {
       if(field == "showGrid") {
-        return mainGrapher->getGraphParamsTable()->grid;
+        return getBoolValue(1);
       } else if (field == "showScale") {
-        return mainGrapher->getGraphParamsTable()->scales;
+        return getBoolValue(1);
       }
       return false;
     }
 
     std::string getStringValue(std::string field) {
-
+      if(field == "funct") {
+        return getStringValue(0);
+      }
+      return "";
     }
 
     int getIntValue(std::string field) {
@@ -95,8 +101,39 @@ namespace mg {
     }
 
     bool setValue(int index, std::string value) {
+      if(index == 0) {
+        try {
+          functionalExpression* newFunc = generate(value);
+          mainGrapher->setFunction(newFunc);
+          return true;
+        } catch (syntaxError e) {
+          return false;
+        }
+      }
+      return false;
+    }
 
-      return true;
+    double getDoubleValue(int index) {
+
+    }
+
+    bool getBoolValue(int index) {
+      switch (index) {
+        case 1: return mainGrapher->getGraphParamsTable()->grid;
+        case 2: return mainGrapher->getGraphParamsTable()->scales;
+      }
+      return false;
+    }
+
+    std::string getStringValue(int index) {
+      switch (index) {
+        case 0: return mainGrapher->restoreFunctionString();
+      }
+      return "";
+    }
+
+    int getIntValue(int index) {
+
     }
 
   };

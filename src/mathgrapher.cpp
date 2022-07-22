@@ -15,12 +15,17 @@ namespace mg {
     params.pxscale = 0;
     params.basisX = 0;
     params.basisY = 0;
+    params.scales = true;
   }
   void grapher::setFunction(functionalExpression* fun) {
+    if(function) {
+      function->destroy();
+      delete function;
+    }
     function = fun;
     changed = true;
   }
-  double grapher::calculateY(double x) {
+  double grapher::calculateFunction(double x) {
     if(!function) return 0;
     globalVarTable.setValue('x', x);
     return function->calculate();
@@ -34,6 +39,12 @@ namespace mg {
   graphParams* grapher::getGraphParamsTable() {
     return &params;
   }
+
+  std::string grapher::restoreFunctionString() {
+    if(!function) return "";
+    return function->restoreExpression();
+  }
+
 
   void grapher::change() {
     changed = true;

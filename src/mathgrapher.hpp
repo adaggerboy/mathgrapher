@@ -21,7 +21,8 @@ namespace mg {
   public:
     grapher();
     void setFunction(functionalExpression* fun);
-    double calculateY(double);
+    std::string restoreFunctionString();
+    double calculateFunction(double);
     bool isSomethingChanged();
     graphParams* getGraphParamsTable();
     void change();

@@ -7,9 +7,11 @@
 #include <QResizeEvent>
 #include <QCheckBox>
 #include <QSignalMapper>
+#include <QTextEdit>
 #include <queue>
 #include <vector>
 #include <iostream>
+
 
 #include "display.hpp"
 #include "controls.hpp"
@@ -118,6 +120,7 @@ namespace mg {
     // QSignalMapper* mapper;
     std::vector<unsigned int> linking;
     std::vector<QCheckBox*> checkboxes;
+    std::vector<QTextEdit*> textboxes;
   public:
     qtControlWindow(controls* con);
   public slots:
@@ -136,8 +139,16 @@ namespace mg {
         QCheckBox* ch = new QCheckBox(this);
         ch->setGeometry(0, 30*i, 400, 30);
         ch->setText(QString::fromStdString(q.userDescription));
+        if(c->getBoolValue(i)) ch->setCheckState(Qt::Checked);
         connect(ch, &QCheckBox::stateChanged, [this, i] {change(i);} );
         checkboxes.push_back(ch);
+      } else if (q.type == control::stringT) {
+        linking.push_back((2 << 24) + textboxes.size());
+        QTextEdit* ch = new QTextEdit(this);
+        ch->setGeometry(0, 30*i, 400, 30);
+        ch->setText(QString::fromStdString(c->getStringValue(i)));
+        connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
+        textboxes.push_back(ch);
       } else linking.push_back(0);
     }
 
@@ -150,6 +161,8 @@ namespace mg {
     int type = (linking[i] & 0xff000000) >> 24;
     if(type == 1) {
       c->setValue(i, (bool)(checkboxes[linking[i] & 0x00ffffff]->checkState()));
+    } if (type == 2) {
+      c->setValue(i, textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString());
     }
   }
 
