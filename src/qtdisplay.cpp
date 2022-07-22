@@ -106,7 +106,9 @@ namespace mg {
     qtContext* cont;
   protected:
     void event(mg::event);
+    void toggleControls();
     friend class qtMainWindow;
+
   public:
     qtDisplay(QApplication* app, renderer* r, eventHandler* e, controls* c, int width, int height);
     ~qtDisplay();
@@ -322,7 +324,6 @@ namespace mg {
     cw = new qtControlWindow(con);
     w->resize(width, height);
     w->show();
-    cw->show();
   }
 
   qtDisplay::~qtDisplay() {
@@ -337,6 +338,11 @@ namespace mg {
 
   void qtDisplay::event(mg::event e) {
     ev->handle(e);
+  }
+
+  void qtDisplay::toggleControls() {
+    if(cw->isVisible()) cw->close();
+    else cw->show();
   }
 
   void qtMainWindow::mousePressEvent(QMouseEvent *ev) {
@@ -373,6 +379,7 @@ namespace mg {
   }
 
   void qtMainWindow::keyPressEvent(QKeyEvent *ev) {
+    if(ev->key() == Qt::Key_E) actualClient->toggleControls();
     mg::event e = {.type = keyPressed, .button=ev->key()};
     actualClient->event(e);
   }

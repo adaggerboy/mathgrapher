@@ -8,7 +8,7 @@ namespace mg {
     int counter;
     grapher* mainGrapher;
     color bg, ax, gr, gd;
-    font def;
+    font def, intr;
   public:
     graphRenderer(grapher* g) {
       mainGrapher = g;
@@ -16,7 +16,9 @@ namespace mg {
       bg = {255, 255, 255, 255};
       ax = {0, 0, 0, 255};
       gr = {255, 0, 0, 255};
-      gd = {200, 200, 255, 255};
+      gd = {220, 230, 255, 255};
+      def = {.size = 10, .weight = 400, .family = "Consolas"};
+      intr = {.size = 12, .weight = 400, .family = "Consolas"};
     }
     virtual void update(display* disp) {
       context* con = disp->getContext();
@@ -46,18 +48,25 @@ namespace mg {
         for (double i = axx; i < w; i+=scw) {
           if(i < 0) continue;
           con->drawLine((int) i, 0, (int) i, h, {gd, 1});
+          con->drawLine((int) i, axy - 2, (int) i, axy + 2, {ax, 1});
+
         }
         for (double i = axx; i >= 0; i-=scw) {
           if(i > w) continue;
           con->drawLine((int) i, 0, (int) i, h, {gd, 1});
+          con->drawLine((int) i, axy - 2, (int) i, axy + 2, {ax, 1});
         }
         for (double i = axy; i < h; i+=scw) {
           if(i < 0) continue;
           con->drawLine(0, (int) i, w, (int) i, {gd, 1});
+          con->drawLine(axx - 2, (int) i, axx + 2, (int) i, {ax, 1});
+
         }
         for (double i = axy; i >= 0; i-=scw) {
           if(i > h) continue;
           con->drawLine(0,(int) i, w, (int) i, {gd, 1});
+          con->drawLine(axx - 2, (int) i, axx + 2, (int) i, {ax, 1});
+
         }
       }
 
@@ -77,9 +86,14 @@ namespace mg {
       }
       int px = mainGrapher->getGraphParamsTable()->pointX;
       double pvx = (px - axx) / scale;
+      double pvpy = (axy - mainGrapher->getGraphParamsTable()->pointY) / scale;
       double pvy = mainGrapher->calculateFunction(pvx);
       int py = (int)(axy - (pvy * scale));
       con->drawCircle(px-3, py-3, px+3, py+3, bg, {gr, 1});
+      con->drawText(3, 12, "Press \'E\' to show graph controls", intr, ax);
+      con->drawText(3, 24, "X = " + std::to_string(pvx), intr, ax);
+      con->drawText(3, 36, "Y = " + std::to_string(pvy) + " (on graph)", intr, ax);
+      con->drawText(3, 48, "Y = " + std::to_string(pvpy) + " (pointer)", intr, ax);
     }
     virtual bool check() {
       return mainGrapher->isSomethingChanged();
