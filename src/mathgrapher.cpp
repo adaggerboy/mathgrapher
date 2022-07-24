@@ -20,6 +20,7 @@ namespace mg {
     params.grid = true;
     params.scales = true;
     params.piscales = false;
+    params.overlay = true;
   }
   void grapher::setFunction(functionalExpression* fun) {
     if(function) {
@@ -80,6 +81,11 @@ namespace mg {
   controls* initControls(grapher*);
 }
 
+void error(std::string mesg) {
+  std::cerr << mesg << '\n';
+  exit(1);
+}
+
 int main(int argc, char *argv[]) {
 
   using namespace mg;
@@ -94,13 +100,38 @@ int main(int argc, char *argv[]) {
   globalVarTable.setValue("phi", (1 + sqrt(5))/2);
   globalVarTable.setValue("e", M_E);
 
-  try {
-    functionalExpression* exp = generate(argv[1]);
-    globalVarTable.setValue('x', 2);
-    graph->setFunction(exp);
+  int f = 0;
 
-  } catch (syntaxError e) {
-    cout << e.what() << endl;
+  for (int i = 1; i < argc; i++) {
+    if(argv[i][0] == 'y' && argv[i][1] == '=') {
+      try {
+        functionalExpression* exp = generate(string(argv[i] + 2));
+        if(f == 0) {
+          graph->setFunction(exp);
+          f++;
+        } else if(f == 1) {
+          graph->setSecondFunction(exp);
+          graph->getGraphParamsTable()->second = true;
+          f++;
+        } else error("More than two functions are not supported yet");
+      } catch (syntaxError e) {
+        error(string("Invalid function:") + e.what());
+      }
+    } else {
+      string var = "";
+      int j;
+      for (j = 0; argv[i][j] && argv[i][j] != '='; j++) {
+        var += argv[i][j];
+      }
+      if(argv[i][j] == '=') {
+        j++;
+        try {
+          globalVarTable.setValue(var, stod(string(argv[i] + j)));
+        } catch (exception e) {
+          error(string("Invalid param:") + argv[i]);
+        }
+      } else error(string("Invalid param:") + argv[i]);
+    }
   }
 
   QApplication* qapp = new QApplication(argc, argv);

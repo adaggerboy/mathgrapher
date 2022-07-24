@@ -12,7 +12,7 @@ namespace mg {
       mainGrapher = g;
     }
     int getControlsCount() {
-      return 11;
+      return 13;
     }
     control getControl(int index) {
       control c;
@@ -50,6 +50,12 @@ namespace mg {
         case 10:
           c = {.field="weightLine", .userDescription="Double graph line thickness", .type=control::boolT};
         break;
+        case 11:
+          c = {.field="showOverlay", .userDescription="Show overlay", .type=control::boolT};
+        break;
+        case 12:
+          c = {.field="reset", .userDescription="Reset position", .type=control::signalT};
+        break;
       }
       return c;
     }
@@ -66,6 +72,8 @@ namespace mg {
         return setValue(9, value);
       } else if (field == "weightLine") {
         return setValue(10, value);
+      } else if (field == "showOverlay") {
+        return setValue(11, value);
       }
       return false;
     }
@@ -114,6 +122,8 @@ namespace mg {
         return getBoolValue(9);
       } else if (field == "weightLine") {
         return getBoolValue(10);
+      } else if (field == "showOverlay") {
+        return getBoolValue(11);
       }
       return false;
     }
@@ -153,6 +163,9 @@ namespace mg {
         break;
         case 10:
           mainGrapher->getGraphParamsTable()->weight = value;
+        break;
+        case 11:
+          mainGrapher->getGraphParamsTable()->overlay = value;
         break;
         default: return false;
       }
@@ -227,6 +240,7 @@ namespace mg {
         case 6: return mainGrapher->getGraphParamsTable()->second;
         case 9: return mainGrapher->getGraphParamsTable()->debug;
         case 10: return mainGrapher->getGraphParamsTable()->weight;
+        case 11: return mainGrapher->getGraphParamsTable()->overlay;
       }
       return false;
     }
@@ -245,6 +259,28 @@ namespace mg {
       }
       return 0;
     }
+
+    bool sendSignal(std::string field) {
+      if(field == "reset") {
+        return sendSignal(12);
+      }
+      return false;
+    }
+
+    bool sendSignal(int index) {
+      switch (index) {
+        case 12:
+          mainGrapher->getGraphParamsTable()->basisX = 0;
+          mainGrapher->getGraphParamsTable()->basisY = 0;
+          mainGrapher->getGraphParamsTable()->scale = 10;
+          mainGrapher->change();
+        break;
+        default: return false;
+      }
+      return true;
+
+    }
+
 
   };
 

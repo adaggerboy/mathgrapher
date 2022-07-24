@@ -9,7 +9,8 @@ namespace mg {
   class graphEventHandler : public event {
     grapher* mainGrapher;
     bool dragmode;
-    int beginX, beginY, beginPX, beginPY;
+    bool ctrl;
+    int beginX, beginY, beginPX, beginPY, w, h;
 
   public:
     graphEventHandler(grapher*);
@@ -25,9 +26,24 @@ namespace mg {
   void graphEventHandler::handle(event e) {
     switch (e.type) {
       case wheelRotated:
-        mainGrapher->getGraphParamsTable()->pxscale += e.dy;
-        mainGrapher->getGraphParamsTable()->scale = 10 * exp(mainGrapher->getGraphParamsTable()->pxscale/100.);
-        mainGrapher->change();
+        {
+          double oldscale = mainGrapher->getGraphParamsTable()->scale;
+          mainGrapher->getGraphParamsTable()->pxscale += e.dy / 10;
+          double newscale = 10 * exp(mainGrapher->getGraphParamsTable()->pxscale/100.);
+          if(newscale > 500000000) {
+            newscale = 500000000;
+            mainGrapher->getGraphParamsTable()->pxscale = 100*log(newscale / 10) + 1;
+          }
+          if(newscale < 5e-7) {
+            newscale = 5e-7;
+            mainGrapher->getGraphParamsTable()->pxscale = 100*log(newscale / 10) - 1;
+          }
+          mainGrapher->getGraphParamsTable()->scale = newscale;
+          mainGrapher->getGraphParamsTable()->basisX = (w/2 + mainGrapher->getGraphParamsTable()->basisX - mainGrapher->getGraphParamsTable()->pointX) * newscale / oldscale + mainGrapher->getGraphParamsTable()->pointX - w/2;
+          mainGrapher->getGraphParamsTable()->basisY = (h/2 + mainGrapher->getGraphParamsTable()->basisY - mainGrapher->getGraphParamsTable()->pointY) * newscale / oldscale + mainGrapher->getGraphParamsTable()->pointY - h/2;
+          mainGrapher->change();
+        }
+
       break;
       case mousePressed:
         dragmode = true;
@@ -53,6 +69,10 @@ namespace mg {
           mainGrapher->change();
 
         }
+      break;
+      case windowResized:
+        w = e.x;
+        h = e.y;
       break;
 
     }

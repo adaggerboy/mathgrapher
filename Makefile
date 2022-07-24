@@ -31,10 +31,10 @@ bin/mathgrapher: bin $(OBJDIR) $(OBJS)
 	$(LXX) $(LXXFLAGS) $(OBJS) -o bin/mathgrapher
 
 run: bin/mathgrapher
-	bin/mathgrapher 0
+	bin/mathgrapher y=0
 
 test: bin/mathgrapher
-	bin/mathgrapher 2*sin\(x/2\)
+	bin/mathgrapher y=2*sin\(x/2\)
 
 build: bin/mathgrapher
 

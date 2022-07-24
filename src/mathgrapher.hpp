@@ -11,7 +11,7 @@ namespace mg {
     int basisX, basisY;
     int pointX, pointY, scprop;
 
-    bool scales, grid, piscales, second, debug, weight;
+    bool scales, grid, piscales, second, debug, weight, overlay;
   };
 
   class grapher {

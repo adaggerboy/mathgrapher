@@ -9,6 +9,9 @@
 #include <QSignalMapper>
 #include <QTextEdit>
 #include <QSlider>
+#include <QPushButton>
+#include <QIcon>
+#include <QLabel>
 #include <queue>
 #include <vector>
 #include <iostream>
@@ -83,6 +86,7 @@ namespace mg {
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+    void closeEvent(QCloseEvent *event);
   public slots:
     void nrender();
   };
@@ -109,6 +113,7 @@ namespace mg {
   protected:
     void event(mg::event);
     void toggleControls();
+    void close();
     friend class qtMainWindow;
 
   public:
@@ -121,11 +126,13 @@ namespace mg {
   class qtControlWindow : public QWidget {
     Q_OBJECT
     controls* c;
-    // QSignalMapper* mapper;
     std::vector<unsigned int> linking;
     std::vector<QCheckBox*> checkboxes;
     std::vector<QTextEdit*> textboxes;
     std::vector<QSlider*> sliders;
+    std::vector<QPushButton*> buttons;
+    std::vector<QLabel*> labels;
+    QColor defTextEdit;
   public:
     qtControlWindow(controls* con);
   public slots:
@@ -133,9 +140,8 @@ namespace mg {
   };
 
   qtControlWindow::qtControlWindow(controls* con) : QWidget() {
-    // mapper = new QSignalMapper(this);
     c = con;
-    this->setFixedSize(QSize(400, 420));
+    this->setFixedSize(QSize(400, 390));
 
     for (int i = 0; i < c->getControlsCount(); i++) {
       control q = c->getControl(i);
@@ -150,22 +156,40 @@ namespace mg {
       } else if (q.type == control::stringT) {
         linking.push_back((2 << 24) + textboxes.size());
         QTextEdit* ch = new QTextEdit(this);
-        ch->setGeometry(0, 30*i, 400, 30);
+        int len = q.userDescription.length() * 7;
+        QLabel* lb = new QLabel(this);
+        lb->setText(QString::fromStdString(q.userDescription));
+        lb->setGeometry(3, 30*i, len, 30);
+        labels.push_back(lb);
+        ch->setGeometry(len, 30*i, 400 - len, 30);
         ch->setText(QString::fromStdString(c->getStringValue(i)));
+        defTextEdit = ch->textBackgroundColor();
         connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
         textboxes.push_back(ch);
       } else if (q.type == control::doubleT) {
         if (q.lowLimit >= q.highLimit) {
           linking.push_back((3 << 24) + textboxes.size());
           QTextEdit* ch = new QTextEdit(this);
-          ch->setGeometry(0, 30*i, 400, 30);
+          int len = q.userDescription.length() * 7;
+          QLabel* lb = new QLabel(this);
+          lb->setText(QString::fromStdString(q.userDescription));
+          lb->setGeometry(3, 30*i, len, 30);
+          labels.push_back(lb);
+          ch->setGeometry(len, 30*i, 400 - len, 30);
           ch->setText(QString::fromStdString(std::to_string(c->getDoubleValue(i))));
+          ch->setAutoFillBackground(true);
+          defTextEdit = ch->textBackgroundColor();
           connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
           textboxes.push_back(ch);
         } else {
           linking.push_back((4 << 24) + sliders.size());
           QSlider* ch = new QSlider(Qt::Horizontal, this);
-          ch->setGeometry(0, 30*i, 400, 30);
+          int len = q.userDescription.length() * 7;
+          QLabel* lb = new QLabel(this);
+          lb->setText(QString::fromStdString(q.userDescription));
+          lb->setGeometry(3, 30*i, len, 30);
+          labels.push_back(lb);
+          ch->setGeometry(len, 30*i + 5, 400 - len, 25);
           ch->setRange((int)(q.lowLimit * 100), (int)(q.highLimit * 100));
           ch->setValue((int)(c->getDoubleValue(i) * 100));
           ch->setTracking(true);
@@ -176,26 +200,40 @@ namespace mg {
         if (q.lowLimit >= q.highLimit) {
           linking.push_back((5 << 24) + textboxes.size());
           QTextEdit* ch = new QTextEdit(this);
-          ch->setGeometry(0, 30*i, 400, 30);
+          int len = q.userDescription.length() * 7;
+          QLabel* lb = new QLabel(this);
+          lb->setText(QString::fromStdString(q.userDescription));
+          lb->setGeometry(3, 30*i, len, 30);
+          labels.push_back(lb);
+          ch->setGeometry(len, 30*i, 400 - len, 30);
           ch->setText(QString::fromStdString(std::to_string(c->getIntValue(i))));
+          defTextEdit = ch->textBackgroundColor();
           connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
           textboxes.push_back(ch);
         } else {
           linking.push_back((6 << 24) + sliders.size());
           QSlider* ch = new QSlider(Qt::Horizontal, this);
-          ch->setGeometry(0, 30*i, 400, 30);
+          int len = q.userDescription.length() * 7;
+          QLabel* lb = new QLabel(this);
+          lb->setText(QString::fromStdString(q.userDescription));
+          lb->setGeometry(3, 30*i, len, 30);
+          labels.push_back(lb);
+          ch->setGeometry(len, 30*i + 5, 400 - len, 25);
           ch->setRange((int)(q.lowLimit), (int)(q.highLimit));
           ch->setValue((int)(c->getDoubleValue(i)));
           ch->setTracking(true);
           connect(ch, &QSlider::valueChanged, [this, i] {change(i);} );
           sliders.push_back(ch);
         }
+      } else if(q.type == control::signalT) {
+        linking.push_back((7 << 24) + buttons.size());
+        QPushButton* ch = new QPushButton(this);
+        ch->setGeometry(0, 30*i, 400, 30);
+        ch->setText(QString::fromStdString(q.userDescription));
+        connect(ch, &QPushButton::clicked, [this, i] {change(i);} );
+        buttons.push_back(ch);
       } else linking.push_back(0);
     }
-
-
-
-
   }
 
   void qtControlWindow::change(int i) {
@@ -203,23 +241,28 @@ namespace mg {
     if(type == 1) {
       c->setValue(i, (bool)(checkboxes[linking[i] & 0x00ffffff]->checkState()));
     } else if (type == 2) {
-      c->setValue(i, textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString());
+      if(c->setValue(i, textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString())) textboxes[linking[i] & 0x00ffffff]->setStyleSheet("");
+      else textboxes[linking[i] & 0x00ffffff]->setStyleSheet("QTextEdit { background-color: rgb(255, 100, 100); }");
     } else if (type == 3) {
       try {
-        c->setValue(i, std::stod(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+        if(c->setValue(i, std::stod(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()))) textboxes[linking[i] & 0x00ffffff]->setStyleSheet("");
+        else textboxes[linking[i] & 0x00ffffff]->setStyleSheet("QTextEdit { background-color: rgb(255, 100, 100); }");
       } catch (std::exception e) {
-
+        textboxes[linking[i] & 0x00ffffff]->setStyleSheet("QTextEdit { background-color: rgb(255, 100, 100); }");
       }
     } else if (type == 4) {
       c->setValue(i, (double)sliders[linking[i] & 0x00ffffff]->value() / 100.);
     } else if (type == 5) {
       try {
-        c->setValue(i, (int)std::stoi(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+        if(c->setValue(i, (int)std::stoi(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()))) textboxes[linking[i] & 0x00ffffff]->setStyleSheet("");
+        else textboxes[linking[i] & 0x00ffffff]->setStyleSheet("QTextEdit { background-color: rgb(255, 100, 100); }");
       } catch (std::exception e) {
-
+        textboxes[linking[i] & 0x00ffffff]->setTextBackgroundColor(Qt::red);
       }
     } else if (type == 6) {
       c->setValue(i, sliders[linking[i] & 0x00ffffff]->value());
+    } else if (type == 7) {
+      c->sendSignal(i);
     }
   }
 
@@ -277,7 +320,7 @@ namespace mg {
         case textD:
           paint->setFont(genQFont(t.f));
           paint->setPen(genQPen(t.p));
-          paint->drawText(t.x1, t.y1, QString::fromStdString(t.text));
+          paint->drawText(t.x1, t.y1 + t.f.size, QString::fromStdString(t.text));
         break;
         case pointD:
           paint->setPen(genQPen(t.p));
@@ -390,6 +433,9 @@ namespace mg {
     w->resize(width, height);
     w->show();
     w->setCursor(Qt::BlankCursor);
+    w->setWindowTitle("MathGrapher v0.1");
+    w->setWindowIcon(QIcon("res/icon.png"));
+    cw->setWindowTitle("Grapher controls");
   }
 
   qtDisplay::~qtDisplay() {
@@ -409,6 +455,10 @@ namespace mg {
   void qtDisplay::toggleControls() {
     if(cw->isVisible()) cw->close();
     else cw->show();
+  }
+
+  void qtDisplay::close() {
+    a->quit();
   }
 
   void qtMainWindow::mousePressEvent(QMouseEvent *ev) {
@@ -452,6 +502,11 @@ namespace mg {
   void qtMainWindow::keyReleaseEvent(QKeyEvent *ev) {
     mg::event e = {.type = mg::event::keyReleased, .button=ev->key()};
     actualClient->event(e);
+  }
+
+  void qtMainWindow::closeEvent(QCloseEvent *ev) {
+    mg::event e = {.type = mg::event::closed};
+    actualClient->close();
   }
 
   display* initQt(QApplication* app, renderer* rend, eventHandler* ev, controls* con) {

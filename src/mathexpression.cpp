@@ -1,4 +1,5 @@
 #include "mathexpression.hpp"
+#include "utils.hpp"
 
 #include <vector>
 #include <cmath>
@@ -305,7 +306,9 @@ namespace mg {
   class definedFunction : public functionalExpression {
     functionalExpression* arg;
   public:
-    enum functionType {sinF, cosF, expF, lnF};
+    enum functionType {sinF, cosF, expF, lnF, \
+      tanF, ctgF, sqrtF, asinF, acosF, atanF, actgF, absF, signF, cbrtF, \
+      roundF, ceilF, floorF};
   private:
     functionType type;
   public:
@@ -331,6 +334,47 @@ namespace mg {
         case lnF:
           res += "ln";
         break;
+
+        case tanF:
+          res += "tg";
+        break;
+        case ctgF:
+          res += "ctg";
+        break;
+        case sqrtF:
+          res += "sqrt";
+        break;
+        case cbrtF:
+          res += "cbrt";
+        break;
+        case asinF:
+          res += "arcsin";
+        break;
+        case acosF:
+          res += "arccos";
+        break;
+        case atanF:
+          res += "arctg";
+        break;
+        case actgF:
+          res += "arcctg";
+        break;
+        case absF:
+          res += "abs";
+        break;
+        case signF:
+          res += "sign";
+        break;
+
+        case roundF:
+          res += "round";
+        break;
+        case ceilF:
+          res += "ceil";
+        break;
+        case floorF:
+          res += "floor";
+        break;
       }
       std::string el = arg->restoreExpression();
       if(el[0] != '(') res += "(";
@@ -347,6 +391,20 @@ namespace mg {
         case cosF: return cos(arg->calculate());
         case expF: return exp(arg->calculate());
         case lnF: return log(arg->calculate());
+
+        case tanF: return tan(arg->calculate());
+        case ctgF: return 1/tan(arg->calculate());
+        case sqrtF: return sqrt(arg->calculate());
+        case cbrtF: return cbrt(arg->calculate());
+        case asinF: return asin(arg->calculate());
+        case acosF: return acos(arg->calculate());
+        case atanF: return atan(arg->calculate());
+        case actgF: return M_PI/2 - atan(arg->calculate());
+        case absF: return fabs((double)arg->calculate());
+        case signF: return sign(arg->calculate());
+        case roundF: return round(arg->calculate());
+        case ceilF: return ceil((double)arg->calculate());
+        case floorF: return floor(arg->calculate());
         default: return 0;
       }
     }
@@ -407,8 +465,46 @@ namespace mg {
         return new definedFunction(definedFunction::cosF, generate(c2->expr, c2->position));
       } else if(c1->expr == "exp") {
         return new definedFunction(definedFunction::expF, generate(c2->expr, c2->position));
-      } else if(c1->expr == "ln") {
-        return new definedFunction(definedFunction::lnF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "sqrt") {
+        return new definedFunction(definedFunction::sqrtF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "cbrt") {
+        return new definedFunction(definedFunction::cbrtF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "asin") {
+        return new definedFunction(definedFunction::asinF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "arcsin") {
+        return new definedFunction(definedFunction::asinF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "acos") {
+        return new definedFunction(definedFunction::acosF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "arccos") {
+        return new definedFunction(definedFunction::acosF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "tan") {
+        return new definedFunction(definedFunction::tanF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "tg") {
+        return new definedFunction(definedFunction::tanF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "cot") {
+        return new definedFunction(definedFunction::ctgF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "ctg") {
+        return new definedFunction(definedFunction::ctgF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "abs") {
+        return new definedFunction(definedFunction::absF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "sign") {
+        return new definedFunction(definedFunction::signF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "sgn") {
+        return new definedFunction(definedFunction::signF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "atan") {
+        return new definedFunction(definedFunction::atanF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "arctg") {
+        return new definedFunction(definedFunction::atanF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "acot") {
+        return new definedFunction(definedFunction::actgF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "arcctg") {
+        return new definedFunction(definedFunction::actgF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "round") {
+        return new definedFunction(definedFunction::roundF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "ceil") {
+        return new definedFunction(definedFunction::ceilF, generate(c2->expr, c2->position));
+      } else if(c1->expr == "floor") {
+        return new definedFunction(definedFunction::floorF, generate(c2->expr, c2->position));
       } else throw syntaxError(5, c1->position);
     } else {
       if(c1->expr == "log") {
