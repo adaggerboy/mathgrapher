@@ -10,7 +10,7 @@ namespace mg {
   protected:
     std::map<char, double> singleLetter;
     std::map<std::string, double> extended;
-    double x, y, a;
+    double x, y, a, b;
   public:
     varTable();
     double getValue(std::string name);

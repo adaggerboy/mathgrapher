@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QSignalMapper>
 #include <QTextEdit>
+#include <QSlider>
 #include <queue>
 #include <vector>
 #include <iostream>
@@ -123,6 +124,7 @@ namespace mg {
     std::vector<unsigned int> linking;
     std::vector<QCheckBox*> checkboxes;
     std::vector<QTextEdit*> textboxes;
+    std::vector<QSlider*> sliders;
   public:
     qtControlWindow(controls* con);
   public slots:
@@ -151,6 +153,42 @@ namespace mg {
         ch->setText(QString::fromStdString(c->getStringValue(i)));
         connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
         textboxes.push_back(ch);
+      } else if (q.type == control::doubleT) {
+        if (q.lowLimit >= q.highLimit) {
+          linking.push_back((3 << 24) + textboxes.size());
+          QTextEdit* ch = new QTextEdit(this);
+          ch->setGeometry(0, 30*i, 400, 30);
+          ch->setText(QString::fromStdString(std::to_string(c->getDoubleValue(i))));
+          connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
+          textboxes.push_back(ch);
+        } else {
+          linking.push_back((4 << 24) + sliders.size());
+          QSlider* ch = new QSlider(Qt::Horizontal, this);
+          ch->setGeometry(0, 30*i, 400, 30);
+          ch->setRange((int)(q.lowLimit * 100), (int)(q.highLimit * 100));
+          ch->setValue((int)(c->getDoubleValue(i) * 100));
+          ch->setTracking(true);
+          connect(ch, &QSlider::valueChanged, [this, i] {change(i);} );
+          sliders.push_back(ch);
+        }
+      } else if (q.type == control::intT) {
+        if (q.lowLimit >= q.highLimit) {
+          linking.push_back((5 << 24) + textboxes.size());
+          QTextEdit* ch = new QTextEdit(this);
+          ch->setGeometry(0, 30*i, 400, 30);
+          ch->setText(QString::fromStdString(std::to_string(c->getIntValue(i))));
+          connect(ch, &QTextEdit::textChanged, [this, i] {change(i);} );
+          textboxes.push_back(ch);
+        } else {
+          linking.push_back((6 << 24) + sliders.size());
+          QSlider* ch = new QSlider(Qt::Horizontal, this);
+          ch->setGeometry(0, 30*i, 400, 30);
+          ch->setRange((int)(q.lowLimit), (int)(q.highLimit));
+          ch->setValue((int)(c->getDoubleValue(i)));
+          ch->setTracking(true);
+          connect(ch, &QSlider::valueChanged, [this, i] {change(i);} );
+          sliders.push_back(ch);
+        }
       } else linking.push_back(0);
     }
 
@@ -163,8 +201,16 @@ namespace mg {
     int type = (linking[i] & 0xff000000) >> 24;
     if(type == 1) {
       c->setValue(i, (bool)(checkboxes[linking[i] & 0x00ffffff]->checkState()));
-    } if (type == 2) {
+    } else if (type == 2) {
       c->setValue(i, textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString());
+    } else if (type == 3) {
+      c->setValue(i, std::stod(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+    } else if (type == 4) {
+      c->setValue(i, (double)sliders[linking[i] & 0x00ffffff]->value() / 100.);
+    } else if (type == 5) {
+      c->setValue(i, (int)std::stoi(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+    } else if (type == 6) {
+      c->setValue(i, sliders[linking[i] & 0x00ffffff]->value());
     }
   }
 
@@ -324,6 +370,7 @@ namespace mg {
     cw = new qtControlWindow(con);
     w->resize(width, height);
     w->show();
+    w->setCursor(Qt::BlankCursor);
   }
 
   qtDisplay::~qtDisplay() {

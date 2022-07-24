@@ -9,7 +9,7 @@ namespace mg {
   varTable globalVarTable;
 
   varTable::varTable() {
-    x = y = a = 0;
+    x = y = a = b = 0;
   }
   double varTable::getValue(std::string name) {
     if(name.length() == 1) return getValue(name[0]);
@@ -20,6 +20,7 @@ namespace mg {
       case 'x': return x;
       case 'y': return y;
       case 'a': return a;
+      case 'b': return b;
       default: return singleLetter[name];
     }
   }
@@ -38,6 +39,9 @@ namespace mg {
         return;
       case 'a':
         a = value;
+        return;
+      case 'b':
+        b = value;
         return;
       default:
         singleLetter[name] = value;
