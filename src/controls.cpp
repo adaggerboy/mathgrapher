@@ -12,7 +12,7 @@ namespace mg {
       mainGrapher = g;
     }
     int getControlsCount() {
-      return 9;
+      return 11;
     }
     control getControl(int index) {
       control c;
@@ -42,7 +42,13 @@ namespace mg {
           c = {.field="secondFunction", .userDescription="y2 = ", .type=control::stringT};
         break;
         case 8:
-          c = {.field="scaleProportion", .userDescription="Scale proportion", .type=control::intT, .lowLimit=-10, .highLimit=10};
+          c = {.field="scaleProportion", .userDescription="Scale proportion", .type=control::intT, .lowLimit=-8, .highLimit=8};
+        break;
+        case 9:
+          c = {.field="debug", .userDescription="Debug information", .type=control::boolT};
+        break;
+        case 10:
+          c = {.field="weightLine", .userDescription="Double graph line thickness", .type=control::boolT};
         break;
       }
       return c;
@@ -56,6 +62,10 @@ namespace mg {
         return setValue(5, value);
       } else if (field == "showSecondFunction") {
         return setValue(6, value);
+      } else if (field == "debug") {
+        return setValue(9, value);
+      } else if (field == "weightLine") {
+        return setValue(10, value);
       }
       return false;
     }
@@ -100,6 +110,10 @@ namespace mg {
         return getBoolValue(5);
       } else if (field == "showSecondFunction") {
         return getBoolValue(6);
+      } else if (field == "debug") {
+        return getBoolValue(9);
+      } else if (field == "weightLine") {
+        return getBoolValue(10);
       }
       return false;
     }
@@ -133,6 +147,12 @@ namespace mg {
         break;
         case 6:
           mainGrapher->getGraphParamsTable()->second = value;
+        break;
+        case 9:
+          mainGrapher->getGraphParamsTable()->debug = value;
+        break;
+        case 10:
+          mainGrapher->getGraphParamsTable()->weight = value;
         break;
         default: return false;
       }
@@ -205,6 +225,8 @@ namespace mg {
         case 2: return mainGrapher->getGraphParamsTable()->scales;
         case 5: return mainGrapher->getGraphParamsTable()->piscales;
         case 6: return mainGrapher->getGraphParamsTable()->second;
+        case 9: return mainGrapher->getGraphParamsTable()->debug;
+        case 10: return mainGrapher->getGraphParamsTable()->weight;
       }
       return false;
     }

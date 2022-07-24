@@ -22,12 +22,16 @@ namespace mg {
     std::string family;
   };
 
+  struct perfDebugStruct {
+    int fps;
+    int tpf;
+  };
+
   class display;
 
   class context {
   protected:
     int width, height;
-
   public:
     int getWidth() {
       return width;
@@ -51,8 +55,11 @@ namespace mg {
   };
 
   class renderer {
+    perfDebugStruct dbg;
   public:
-
+    perfDebugStruct* getDebugStruct() {
+      return &dbg;
+    }
     virtual void update(display*) = 0;
     virtual bool check() = 0;
   };

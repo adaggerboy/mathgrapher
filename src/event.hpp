@@ -5,10 +5,8 @@
 
 namespace mg {
 
-  enum eventType {mouseMoved, mousePressed, mouseReleased, windowResized, wheelRotated, keyPressed, keyReleased};
-
   struct event {
-    eventType type;
+    enum eventType {mouseMoved, mousePressed, mouseReleased, windowResized, wheelRotated, keyPressed, keyReleased} type;
     int x, y, dx, dy, button;
   };
 

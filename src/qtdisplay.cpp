@@ -67,6 +67,7 @@ namespace mg {
     renderer* rend;
     friend class qtContext;
     bool forceUpdate;
+    int fps_counter, upd_counter;
   protected:
     void pushTask(drawTask t) {
       tasks.push(t);
@@ -134,7 +135,7 @@ namespace mg {
   qtControlWindow::qtControlWindow(controls* con) : QWidget() {
     // mapper = new QSignalMapper(this);
     c = con;
-    this->setFixedSize(QSize(400, 300));
+    this->setFixedSize(QSize(400, 420));
 
     for (int i = 0; i < c->getControlsCount(); i++) {
       control q = c->getControl(i);
@@ -204,11 +205,19 @@ namespace mg {
     } else if (type == 2) {
       c->setValue(i, textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString());
     } else if (type == 3) {
-      c->setValue(i, std::stod(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+      try {
+        c->setValue(i, std::stod(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+      } catch (std::exception e) {
+
+      }
     } else if (type == 4) {
       c->setValue(i, (double)sliders[linking[i] & 0x00ffffff]->value() / 100.);
     } else if (type == 5) {
-      c->setValue(i, (int)std::stoi(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+      try {
+        c->setValue(i, (int)std::stoi(textboxes[linking[i] & 0x00ffffff]->toPlainText().toStdString()));
+      } catch (std::exception e) {
+
+      }
     } else if (type == 6) {
       c->setValue(i, sliders[linking[i] & 0x00ffffff]->value());
     }
@@ -218,6 +227,7 @@ namespace mg {
     actualClient = client;
     rend = r;
     setMouseTracking(true);
+    fps_counter = upd_counter = 0;
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(nrender()));
@@ -226,11 +236,19 @@ namespace mg {
   }
 
   void qtMainWindow::nrender() {
+    if(upd_counter == 60) {
+      rend->getDebugStruct()->fps = fps_counter;
+      fps_counter = upd_counter = 0;
+    }
     if(forceUpdate || rend->check()) repaint();
+    upd_counter++;
   }
 
   void qtMainWindow::paintEvent(QPaintEvent *event) {
+    fps_counter++;
     rend->update(actualClient);
+    perfDebugStruct* dbg = rend->getDebugStruct();
+    dbg->tpf = 0;
 
     paint = new QPainter(this);
 
@@ -266,6 +284,7 @@ namespace mg {
           paint->drawPoint(t.x1, t.y1);
         break;
       }
+      dbg->tpf++;
     }
     forceUpdate = false;
     delete paint;
@@ -398,7 +417,7 @@ namespace mg {
     else if(ev->button() & Qt::RightButton) btn = 2;
     else if(ev->button() & Qt::MiddleButton) btn = 3;
     else btn = 0;
-    mg::event e = {.type = mousePressed, .x=ev->x(), .y=ev->y(), .button=btn};
+    mg::event e = {.type = mg::event::mousePressed, .x=ev->x(), .y=ev->y(), .button=btn};
     actualClient->event(e);
   }
   void qtMainWindow::mouseReleaseEvent(QMouseEvent *ev) {
@@ -407,31 +426,31 @@ namespace mg {
     else if(ev->button() & Qt::RightButton) btn = 2;
     else if(ev->button() & Qt::MiddleButton) btn = 3;
     else btn = 0;
-    mg::event e = {.type = mouseReleased, .x=ev->x(), .y=ev->y(), .button=btn};
+    mg::event e = {.type = mg::event::mouseReleased, .x=ev->x(), .y=ev->y(), .button=btn};
     actualClient->event(e);
   }
   void qtMainWindow::mouseMoveEvent(QMouseEvent *ev) {
-    mg::event e = {.type = mouseMoved, .x=ev->x(), .y=ev->y()};
+    mg::event e = {.type = mg::event::mouseMoved, .x=ev->x(), .y=ev->y()};
     actualClient->event(e);
   }
   void qtMainWindow::wheelEvent(QWheelEvent *ev) {
-    mg::event e = {.type = wheelRotated, .x=(int)ev->position().x(), .y=(int)ev->position().y(), .dx=ev->angleDelta().x(), .dy=ev->angleDelta().y()};
+    mg::event e = {.type = mg::event::wheelRotated, .x=(int)ev->position().x(), .y=(int)ev->position().y(), .dx=ev->angleDelta().x(), .dy=ev->angleDelta().y()};
     actualClient->event(e);
   }
   void qtMainWindow::resizeEvent(QResizeEvent *ev) {
     actualClient->getContext()->setWidth(ev->size().width());
     actualClient->getContext()->setHeight(ev->size().height());
-    // mg::event e = {.type = windowResized, .x=ev->size().width(), .y=ev->size().height()};
-    // actualClient->event(e);
+    mg::event e = {.type = mg::event::windowResized, .x=ev->size().width(), .y=ev->size().height()};
+    actualClient->event(e);
   }
 
   void qtMainWindow::keyPressEvent(QKeyEvent *ev) {
     if(ev->key() == Qt::Key_E) actualClient->toggleControls();
-    mg::event e = {.type = keyPressed, .button=ev->key()};
+    mg::event e = {.type = mg::event::keyPressed, .button=ev->key()};
     actualClient->event(e);
   }
   void qtMainWindow::keyReleaseEvent(QKeyEvent *ev) {
-    mg::event e = {.type = keyPressed, .button=ev->key()};
+    mg::event e = {.type = mg::event::keyReleased, .button=ev->key()};
     actualClient->event(e);
   }
 
