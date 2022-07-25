@@ -37,6 +37,6 @@ Arguments can be written in any order. You can define only 2 functions
 
 ##_Limitations and troubles_
 
-1. Maximum zoom is 500000000 and renderer routine feels good on it only while you are looking near the 0. As farther you move - as more laggy will be rendering at large zoom.
+1. Maximum zoom is 500000000 and renderer feels good on it only while you are looking near the 0. As farther you move - as more laggy will be rendering at large zoom.
 
 2. Infinity jumps leave vertical lines. I've commented code which is written in an attempt to solve this problem.
