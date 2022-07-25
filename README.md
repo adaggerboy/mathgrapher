@@ -2,9 +2,11 @@
 
 
 ##_Description_
+
 The MathGrapher is a simple program that draws graphs of math functions.
 
 ##_Building_
+
 Project can be easily built using
 
 `make`
