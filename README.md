@@ -4,6 +4,7 @@
 ##_Description_
 
 The MathGrapher is a simple program that draws graphs of math functions.
+It uses Qt as an graphical interface, but in theory can be implemented using any other graphics library/API.
 
 ##_Building_
 
