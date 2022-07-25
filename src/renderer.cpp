@@ -156,24 +156,24 @@ namespace mg {
         for (double i = axx; i < w; i+=scw) {
           if(i < 0) continue;
           con->drawLine((int) i, axy - 2, (int) i, axy + 2, {ax, 1});
-          if(i != axx) con->drawText((int) i - 2, axy + 10, fastDTOS((i - axx) / scale), def, ax);
+          if(i != axx) con->drawText((int) i - 2, axy + 1, fastDTOS((i - axx) / scale), def, ax);
         }
         for (double i = axx; i >= 0; i-=scw) {
           if(i > w) continue;
           con->drawLine((int) i, axy - 2, (int) i, axy + 2, {ax, 1});
-          if(i != axx) con->drawText((int) i - 5, axy + 10, fastDTOS((i - axx) / scale), def, ax);
+          if(i != axx) con->drawText((int) i - 5, axy + 1, fastDTOS((i - axx) / scale), def, ax);
         }
       }
       if(mainGrapher->getGraphParamsTable()->scales && axx > -50 && axx < w + 10) {
         for (double i = axy; i < h; i+=scw) {
           if(i < 0) continue;
           con->drawLine(axx - 2, (int) i, axx + 2, (int) i, {ax, 1});
-          if(i != axy) con->drawText(axx + 2, (int)i + 3, fastDTOS(-(i - axy) / scale / yxscl), def, ax);
+          if(i != axy) con->drawText(axx + 2, (int)i - 7, fastDTOS(-(i - axy) / scale / yxscl), def, ax);
         }
         for (double i = axy; i >= 0; i-=scw) {
           if(i > h) continue;
           con->drawLine(axx - 2, (int) i, axx + 2, (int) i, {ax, 1});
-          if(i != axy) con->drawText(axx + 2, (int)i + 3, fastDTOS(-(i - axy) / scale / yxscl), def, ax);
+          if(i != axy) con->drawText(axx + 2, (int)i - 7, fastDTOS(-(i - axy) / scale / yxscl), def, ax);
         }
       }
 
@@ -181,12 +181,12 @@ namespace mg {
         for (double i = axx; i < w; i += (scale < scw ? scw : scale) * M_PI) {
           if(i < 0) continue;
           con->drawLine((int) i, axy - 3, (int) i, axy + 3, {pisc, 1});
-          if(i != axx) con->drawText((int) i - 5, axy - 5, fastDTOS((i - axx) / scale / M_PI) + PI_SYMBOL, def, pisc);
+          if(i != axx) con->drawText((int) i - 5, axy - 15, fastDTOS((i - axx) / scale / M_PI) + PI_SYMBOL, def, pisc);
         }
         for (double i = axx; i >= 0; i -= (scale < scw ? scw : scale) * M_PI) {
           if(i > w) continue;
           con->drawLine((int) i, axy - 3, (int) i, axy + 3, {pisc, 1});
-          if(i != axx) con->drawText((int) i - 5, axy - 5, fastDTOS((i - axx) / scale / M_PI) + PI_SYMBOL, def, pisc);
+          if(i != axx) con->drawText((int) i - 5, axy - 15, fastDTOS((i - axx) / scale / M_PI) + PI_SYMBOL, def, pisc);
         }
       }
 
